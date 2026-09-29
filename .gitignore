@@ -1,0 +1,9 @@
+.gradle/
+.kotlin/
+.idea/
+**/build/
+*.iml
+*.zip
+*.exe
+*.gpg
+hs_err_pid*

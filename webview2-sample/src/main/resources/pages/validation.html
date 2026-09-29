@@ -1,0 +1,42 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>WebView2 validation</title>
+<style>body{margin:0;padding:28px;background:#eff6ff;color:#172554;font:18px system-ui}h1{font-size:26px;margin:0 0 16px}button,input,textarea{font:inherit;padding:10px;margin:8px 0;max-width:90%}.animation{width:52px;height:52px;background:#2563eb;border-radius:12px;animation:move 2s infinite alternate ease-in-out}@keyframes move{to{transform:translateX(220px) rotate(180deg);background:#7c3aed}}.space{height:600px}</style>
+<body><h1>Real Edge WebView2</h1><p>Captured browser pixels, drawn by Compose.</p><div class="animation"></div>
+<p id="counter">Page clicks: 0</p><button id="pageButton" onclick="this.textContent='Button clicked'">Browser button</button><br>
+<input id="input" placeholder="中文输入 / IME"><br><textarea id="text" rows="3" placeholder="Selection, clipboard and Tab"></textarea>
+<p id="bridge">Connecting to Kotlin…</p><button onclick="App.greet('Compose').then(value => document.querySelector('#bridge').textContent=value)">Send async message</button>
+<script>window.bridgeVersion = App.getVersion(); document.querySelector('#bridge').textContent = appPlatform + ' / Kotlin version ' + bridgeVersion;</script>
+<h2>Cross-origin fetch through Kotlin</h2>
+<p>The API uses a different port and does not allow browser CORS.</p>
+<button id="fetchButton" onclick="runFetchDemo()">Compare browser fetch / App.fetchGet</button>
+<pre id="fetchResult" style="white-space:pre-wrap;overflow-wrap:anywhere">Click to compare.</pre>
+<script>
+window.runFetchDemo = async () => {
+    const output = document.querySelector('#fetchResult');
+    window.fetchDemo = {done:false, pageOrigin:location.origin, apiOrigin};
+    output.textContent = 'Requesting…';
+    try {
+        try {
+            await fetch(apiOrigin + '/data?via=browser');
+            fetchDemo.browserBlocked = false;
+        } catch (error) {
+            fetchDemo.browserBlocked = error instanceof TypeError;
+            fetchDemo.browserError = String(error);
+        }
+        const pending = App.fetchGet(apiOrigin + '/data?via=native', {
+            headers: {'X-Demo':'from-JavaScript'}, timeoutMs:5000
+        });
+        fetchDemo.promise = pending instanceof Promise;
+        fetchDemo.response = await pending;
+        fetchDemo.stats = (await App.fetchGet(apiOrigin + '/stats', {})).json;
+        fetchDemo.done = true;
+        output.textContent = JSON.stringify(fetchDemo, null, 2);
+    } catch (error) {
+        fetchDemo.error = String(error);
+        fetchDemo.done = true;
+        output.textContent = fetchDemo.error;
+    }
+};
+</script>
+<p>Scroll down to verify wheel routing.</p><div class="space"></div><h2>End of page</h2>
+<script>window.clicks=0;document.addEventListener('click',()=>{document.querySelector('#counter').textContent='Page clicks: '+(++window.clicks)});</script>
+</body></html>
