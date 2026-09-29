@@ -1,5 +1,7 @@
 # compose-webview2
 
+[![Maven Central](https://img.shields.io/maven-central/v/li.songe.webview2/webview2-compose.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/li.songe.webview2/webview2-compose)
+
 [English](README.md) | 简体中文
 
 在 Windows x64 的 Compose Desktop 中嵌入 WebView2。

@@ -1,5 +1,7 @@
 # compose-webview2
 
+[![Maven Central](https://img.shields.io/maven-central/v/li.songe.webview2/webview2-compose.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/li.songe.webview2/webview2-compose)
+
 English | [简体中文](README.zh.md)
 
 Embed WebView2 in Compose Desktop on Windows x64.
