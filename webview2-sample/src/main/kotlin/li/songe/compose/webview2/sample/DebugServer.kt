@@ -35,6 +35,9 @@ import javax.imageio.ImageIO
 class DemoModel {
     lateinit var window: Window
     lateinit var web: WebViewState
+    lateinit var customWeb: WebViewState
+    var customPage by mutableStateOf(false)
+    var customUrl by mutableStateOf("https://example.com")
     var popup by mutableStateOf(false)
     var dialog by mutableStateOf(false)
     var menu by mutableStateOf(false)
@@ -125,6 +128,12 @@ fun startDebugServer(model: DemoModel): AutoCloseable {
             get("/state") {
                 val result = withContext(Dispatchers.Swing) {
                     buildJsonObject {
+                        put("customPage", model.customPage)
+                        put("customUrl", model.customWeb.url)
+                        put("customStatus", model.customWeb.status)
+                        put("customError", model.customWeb.error?.message)
+                        put("customErrorStage", model.customWeb.error?.stage?.name)
+                        put("customFrames", model.customWeb.frameCount)
                         put("url", model.web.url); put("title", model.web.title)
                         put("isLoading", model.web.isLoading); put("canGoBack", model.web.canGoBack); put("canGoForward", model.web.canGoForward)
                         put("status", model.web.status); put("frames", model.web.frameCount)
@@ -161,6 +170,8 @@ fun startDebugServer(model: DemoModel): AutoCloseable {
             post("/control") {
                 val values = Json.parseToJsonElement(call.receiveText()).jsonObject
                 withContext(Dispatchers.Swing) {
+                    values["customPage"]?.let { model.customPage = it.jsonPrimitive.boolean }
+                    values["customUrl"]?.let { model.customUrl = it.jsonPrimitive.content; model.customWeb.loadUrl(model.customUrl) }
                     values["popup"]?.let { model.popup = it.jsonPrimitive.boolean }
                     values["dialog"]?.let { model.dialog = it.jsonPrimitive.boolean }
                     values["menu"]?.let { model.menu = it.jsonPrimitive.boolean }

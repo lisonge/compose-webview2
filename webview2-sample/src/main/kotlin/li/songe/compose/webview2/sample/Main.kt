@@ -52,6 +52,7 @@ fun main(args: Array<String>) {
         application(exitProcessOnExit = false) {
             val model = remember { DemoModel() }
             val state = rememberWebViewState(network.pageOrigin)
+            val customState = rememberWebViewState()
             val bindings = rememberWebViewBindings {
                 allowOrigin(network.pageOrigin)
                 addJavascriptInterface(api, "NativeApp")
@@ -61,6 +62,7 @@ fun main(args: Array<String>) {
                 addJavascriptVariable("apiOrigin", kotlinx.serialization.json.JsonPrimitive(network.apiOrigin))
             }
             model.web = state
+            model.customWeb = customState
             model.quit = { model.closing = true }
             LaunchedEffect(model.closing, model.holdCloseForTest) {
                 if (!model.closing) return@LaunchedEffect
@@ -70,6 +72,7 @@ fun main(args: Array<String>) {
                 // place while the STA releases resources. Do not blank the area.
                 val closed = withTimeoutOrNull(5000) {
                     state.awaitClosed()
+                    customState.awaitClosed()
                     true
                 } == true
                 if (closed) {
@@ -97,45 +100,53 @@ fun main(args: Array<String>) {
                             Text("WebView2 inside Compose", style = MaterialTheme.typography.headlineMedium)
                             model.shutdownError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Button(onClick = { model.popup = !model.popup }, Modifier.record(model, "openPopup")) { Text("Popup") }
-                                Button(onClick = { model.dialog = true }, Modifier.record(model, "openDialog")) { Text("Dialog") }
-                                Box {
-                                    Button(onClick = { model.menu = true }, Modifier.record(model, "openMenu")) { Text("DropdownMenu") }
-                                    DropdownMenu(expanded = model.menu, onDismissRequest = { model.menu = false }) {
-                                        DropdownMenuItem(text = { Text("Ordinary Compose menu") }, onClick = { model.popupClicks++; model.menu = false }, modifier = Modifier.record(model, "menuItem"))
-                                    }
-                                }
-                                Button(onClick = { model.mounted = !model.mounted }) { Text(if (model.mounted) "Dispose" else "Recreate") }
+                                FilterChip(selected = !model.customPage, onClick = { model.customPage = false }, label = { Text("集成示例") })
+                                FilterChip(selected = model.customPage, onClick = { model.customPage = true }, label = { Text("自定义链接") })
                             }
-                            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                                Column(Modifier.width(240.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    Text("Independent Compose region", style = MaterialTheme.typography.titleMedium)
-                                    OutlinedTextField(model.composeText, { model.composeText = it }, Modifier.record(model, "composeInput"), label = { Text("Compose input") })
-                                    Text("Status: ${state.status}")
-                                    Text("Captured: ${state.frameWidth} × ${state.frameHeight}")
-                                    Text("Overlay clicks: ${model.overlayClicks}")
-                                    Text("Popup clicks: ${model.popupClicks}")
-                                    Text("Dialog clicks: ${model.dialogClicks}")
-                                    Text("Opacity")
-                                    Slider(model.opacity, { model.opacity = it })
-                                    Text(if (testing) "Background HTTP mode\nNative focus disabled" else "Click the page to test native keyboard / IME")
+                            if (model.customPage) {
+                                CustomLinkPage(customState, model, runtimeAvailable, profile, testing, Modifier.weight(1f))
+                            } else {
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Button(onClick = { model.popup = !model.popup }, Modifier.record(model, "openPopup")) { Text("Popup") }
+                                    Button(onClick = { model.dialog = true }, Modifier.record(model, "openDialog")) { Text("Dialog") }
+                                    Box {
+                                        Button(onClick = { model.menu = true }, Modifier.record(model, "openMenu")) { Text("DropdownMenu") }
+                                        DropdownMenu(expanded = model.menu, onDismissRequest = { model.menu = false }) {
+                                            DropdownMenuItem(text = { Text("Ordinary Compose menu") }, onClick = { model.popupClicks++; model.menu = false }, modifier = Modifier.record(model, "menuItem"))
+                                        }
+                                    }
+                                    Button(onClick = { model.mounted = !model.mounted }) { Text(if (model.mounted) "Dispose" else "Recreate") }
                                 }
-                                Box(Modifier.weight(1f).fillMaxHeight().background(Color(0xFFE2E8F0), RoundedCornerShape(20.dp)).record(model, "webArea")) {
-                                    if (!runtimeAvailable) Text(
-                                        "未检测到已安装的WebView2",
-                                        modifier = Modifier.align(Alignment.Center),
-                                    )
-                                    else if (model.mounted) WebView(state,
-                                        Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).graphicsLayer { alpha = model.opacity },
-                                        WebViewSettings(profile.absolutePath, requestNativeFocus = !testing, preferredColorScheme = model.colorScheme), running = !model.closing, bindings = bindings)
-                                    Button(onClick = { model.overlayClicks++ },
-                                        Modifier.align(Alignment.TopEnd).padding(18.dp).record(model, "overlay")) { Text("Compose overlay") }
-                                    if (model.popup) Popup(alignment = Alignment.Center, onDismissRequest = { model.popup = false }, properties = PopupProperties(focusable = true)) {
-                                        Surface(shadowElevation = 12.dp, shape = RoundedCornerShape(16.dp), color = Color(0xFFFFE4B5)) {
-                                            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                                Text("Standard Compose Popup")
-                                                Button(onClick = { model.popupClicks++ }, Modifier.record(model, "popupAction")) { Text("Popup click ${model.popupClicks}") }
-                                                Button(onClick = { model.popup = false }, Modifier.record(model, "popupClose")) { Text("Close popup") }
+                                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                                    Column(Modifier.width(240.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Text("Independent Compose region", style = MaterialTheme.typography.titleMedium)
+                                        OutlinedTextField(model.composeText, { model.composeText = it }, Modifier.record(model, "composeInput"), label = { Text("Compose input") })
+                                        Text("Status: ${state.status}")
+                                        Text("Captured: ${state.frameWidth} × ${state.frameHeight}")
+                                        Text("Overlay clicks: ${model.overlayClicks}")
+                                        Text("Popup clicks: ${model.popupClicks}")
+                                        Text("Dialog clicks: ${model.dialogClicks}")
+                                        Text("Opacity")
+                                        Slider(model.opacity, { model.opacity = it })
+                                        Text(if (testing) "Background HTTP mode\nNative focus disabled" else "Click the page to test native keyboard / IME")
+                                    }
+                                    Box(Modifier.weight(1f).fillMaxHeight().background(Color(0xFFE2E8F0), RoundedCornerShape(20.dp)).record(model, "webArea")) {
+                                        if (!runtimeAvailable) Text(
+                                            "未检测到已安装的WebView2",
+                                            modifier = Modifier.align(Alignment.Center),
+                                        )
+                                        else if (model.mounted) WebView(state,
+                                            Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).graphicsLayer { alpha = model.opacity },
+                                            WebViewSettings(profile.absolutePath, requestNativeFocus = !testing, preferredColorScheme = model.colorScheme), running = !model.closing, bindings = bindings)
+                                        Button(onClick = { model.overlayClicks++ },
+                                            Modifier.align(Alignment.TopEnd).padding(18.dp).record(model, "overlay")) { Text("Compose overlay") }
+                                        if (model.popup) Popup(alignment = Alignment.Center, onDismissRequest = { model.popup = false }, properties = PopupProperties(focusable = true)) {
+                                            Surface(shadowElevation = 12.dp, shape = RoundedCornerShape(16.dp), color = Color(0xFFFFE4B5)) {
+                                                Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                                    Text("Standard Compose Popup")
+                                                    Button(onClick = { model.popupClicks++ }, Modifier.record(model, "popupAction")) { Text("Popup click ${model.popupClicks}") }
+                                                    Button(onClick = { model.popup = false }, Modifier.record(model, "popupClose")) { Text("Close popup") }
+                                                }
                                             }
                                         }
                                     }

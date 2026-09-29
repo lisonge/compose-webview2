@@ -279,3 +279,10 @@ HTTP verify-navigation 验证 Compose 状态与返回/前进方法；主题、fe
 证据日志：build/improvements-regression.log、build/improvements-final.log、build/improvements-background.log、build/improvements-fetch.log、build/improvements-theme.log、build/improvements-navigation.log、build/improvements-close.log；截图与报告仍位于 webview2-sample/build/evidence。
 
 人工验收待办：真实 Escape/F12/Ctrl 组合键及抬起消费语义、中文 IME、Tab/系统焦点、跨屏 DPI、最小化恢复。浏览器/GPU 故障注入、可访问性、拖放、长期内存曲线亦未验证；未运行抢焦点测试。
+
+## 自定义链接 sample（2026-09-29）
+
+- sample classes、库 check 通过；run --args=--test 启动，verify-background.ps1 原有 21 项全部通过，activations=0。
+- 经测试 HTTP API 切换自定义链接页签，加载本地 fixture 得到真实网页帧；加载 http://127.0.0.1:1/unreachable 得到 Navigation 错误，再加载有效链接后 Ready 且错误清空。未向自定义网页注入 sample JS 桥接。
+- 已查看错误截图，确认地址栏、WebView 和可选择的错误详情可见；失败时可能保留上个页面画面，以右侧错误状态为准。截图保留在 webview2-sample/build/evidence/custom-error.png 和 custom-success.png。
+- 自定义页签打开时正常退出，两个实例等待结束后才销毁窗口，Gradle 成功退出。真实地址栏键盘/回车、网页 IME 未进行前台验收。
