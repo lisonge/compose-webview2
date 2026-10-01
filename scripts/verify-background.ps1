@@ -45,6 +45,10 @@ Start-Sleep -Milliseconds 500
 $initial = State
 Assert ($initial.width -eq $initial.bounds.webArea.width -and $initial.height -eq $initial.bounds.webArea.height) 'capture matches Compose pixel dimensions'
 Assert ((Eval 'document.querySelector("h1").textContent') -eq 'Real Edge WebView2') 'actual browser document loaded'
+$scrollbar = Eval '({viewportWidth:innerWidth,clientWidth:document.documentElement.clientWidth,viewportHeight:innerHeight,scrollHeight:document.documentElement.scrollHeight})'
+Assert ($scrollbar.scrollHeight -gt $scrollbar.viewportHeight) 'fixture overflows vertically'
+Assert ($scrollbar.viewportWidth -eq $scrollbar.clientWidth) 'FluentOverlay scrollbar reserves no layout width'
+$scrollbar | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'scrollbar.json') -Encoding utf8
 Assert ((Eval 'window.bridgeVersion') -eq '0.1.0') 'page startup calls synchronous Kotlin method'
 Assert ((Eval 'App.getVersion() instanceof Promise') -eq $false) 'ordinary Kotlin method returns synchronously'
 Eval 'window.bridgeGreeting=null; App.greet("Compose").then(value=>window.bridgeGreeting=value); true' | Out-Null
@@ -92,6 +96,8 @@ Assert ((Eval 'document.querySelector("#pageButton").textContent') -eq 'Button c
 Post 'pointer' @{ x=[int]($area.x+$area.width/2); y=[int]($area.y+$area.height/2); wheel=4 }
 Wait-Until { (Eval 'scrollY') -gt 50 } 'browser scrolling'
 Assert ((Eval 'scrollY') -gt 50) 'wheel reaches browser'
+Assert ((Eval 'innerWidth-document.documentElement.clientWidth') -eq 0) 'scrollbar reserves no layout width after wheel scrolling'
+Screenshot 'scrollbar-scrolled'
 Eval 'scrollTo(0,0)' | Out-Null
 
 Click 'composeInput'

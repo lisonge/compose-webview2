@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation("li.songe.webview2:webview2-compose:0.1.0")
+    implementation("li.songe.webview2:webview2-compose:0.1.1")
 }
 ```
 

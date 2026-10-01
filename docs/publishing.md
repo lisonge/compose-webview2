@@ -1,6 +1,6 @@
 # 本地发布
 
-目前配置 Maven Local 发布，坐标为 `li.songe.webview2:webview2-compose:0.1.0-SNAPSHOT`。sample 不发布；native DLL 已打包进库 JAR，不需要单独发布原生模块。
+目前配置 Maven Local 发布，坐标为 `li.songe.webview2:webview2-compose:0.1.1-SNAPSHOT`。sample 不发布；native DLL 已打包进库 JAR，不需要单独发布原生模块。
 
 ## 发布
 
@@ -10,7 +10,7 @@
 .\gradlew.bat :webview2-compose:check :webview2-compose:publishToMavenLocal
 ```
 
-生成主 JAR、sources JAR、POM 和 Gradle Module Metadata；发布的是未混淆库，应用在最终打包时混淆。DLL 和两条 consumer rules 都在主 JAR 内。Maven Local 默认位置为 `%USERPROFILE%\.m2\repository\li\songe\webview2\webview2-compose\0.1.0-SNAPSHOT\`，Maven settings 或 `maven.repo.local` 可以覆盖位置。
+生成主 JAR、sources JAR、POM 和 Gradle Module Metadata；发布的是未混淆库，应用在最终打包时混淆。DLL 和两条 consumer rules 都在主 JAR 内。Maven Local 默认位置为 `%USERPROFILE%\.m2\repository\li\songe\webview2\webview2-compose\0.1.1-SNAPSHOT\`，Maven settings 或 `maven.repo.local` 可以覆盖位置。
 
 不需要账号、签名或远程仓库权限。基础版本统一在根目录 `build.gradle.kts` 中设置。存在 `CI` 环境变量时使用正式版本，其他环境统一追加 `-SNAPSHOT`，与执行的任务无关。不自动提供此变量的 CI/CD 平台需在流水线中设置 `CI=true`。本地构建、本地仓库发布和本机执行的远程发布都会使用快照版本，无需修改文件或传版本参数。
 
@@ -29,7 +29,7 @@ repositories {
 依赖：
 
 ```kotlin
-implementation("li.songe.webview2:webview2-compose:0.1.0-SNAPSHOT")
+implementation("li.songe.webview2:webview2-compose:0.1.1-SNAPSHOT")
 ```
 
 使用者仍需 Windows x64、WebView2 Runtime、JDK 21+ 及兼容的 Kotlin/Compose 版本；不需要安装 MSVC/CMake。库本机编译工具只用于构建发布者的 DLL。API 与使用方法见 README；混淆配置见 shrinking.md。
@@ -55,8 +55,8 @@ implementation("li.songe.webview2:webview2-compose:0.1.0-SNAPSHOT")
 先更新根目录 `build.gradle.kts` 的版本及 `CHANGELOG.md`，提交后可用以下命令触发（示例版本按实际发布修改）：
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 发布前 `verifyReleaseVersion` 校验标签必须等于 `v${project.version}`，且不允许 SNAPSHOT；版本不符会立即失败，不进入构建或发布。

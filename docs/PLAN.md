@@ -1,5 +1,12 @@
 # 执行计划
 
+## FluentOverlay 滚动条（2026-10-01）
+
+- [x] 原生环境创建时设置 FluentOverlay；测试 HTML 空白区域由 600px 改为 150vh，确保纵向溢出。
+- [x] 构建、browserSmoke、后台 24 项检查及滚动截图验收；滚动前后布局占宽为 0，activations=0。
+
+## 原计划
+
 依据：[SPEC.md](SPEC.md)。按关卡推进，先验证架构再扩展 API。
 
 1. [x] 固化规范、验收条件与中断条件。

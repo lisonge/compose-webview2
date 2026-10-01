@@ -12,6 +12,7 @@
 #include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
 #include <wrl.h>
 #include <WebView2.h>
+#include <WebView2EnvironmentOptions.h>
 #include <atomic>
 #include <cmath>
 #include <cwchar>
@@ -322,7 +323,11 @@ struct Host : std::enable_shared_from_this<Host> {
             parent = ownedWindow;
         }
         const auto weak = weak_from_this();
-        check_hresult(CreateCoreWebView2EnvironmentWithOptions(nullptr, profile.c_str(), nullptr,
+        auto environmentOptions = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+        ComPtr<ICoreWebView2EnvironmentOptions8> scrollbarOptions;
+        check_hresult(environmentOptions.As(&scrollbarOptions));
+        check_hresult(scrollbarOptions->put_ScrollBarStyle(COREWEBVIEW2_SCROLLBAR_STYLE_FLUENT_OVERLAY));
+        check_hresult(CreateCoreWebView2EnvironmentWithOptions(nullptr, profile.c_str(), environmentOptions.Get(),
             Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
                 [weak](HRESULT result, ICoreWebView2Environment* env) -> HRESULT {
                     auto self = weak.lock();

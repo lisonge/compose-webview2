@@ -6,7 +6,7 @@ plugins {
 val isCi = providers.environmentVariable("CI").isPresent
 allprojects {
     group = "li.songe.webview2"
-    version = "0.1.0" + if (isCi) "" else "-SNAPSHOT"
+    version = "0.1.1" + if (isCi) "" else "-SNAPSHOT"
 }
 
 val releaseTag = providers.environmentVariable("GITHUB_REF_NAME")

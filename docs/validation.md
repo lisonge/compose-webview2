@@ -1,5 +1,13 @@
 # 验收记录
 
+## FluentOverlay 滚动条（2026-10-01）
+
+- 在所属 STA 创建环境选项，通过 ICoreWebView2EnvironmentOptions8 设置 FLUENT_OVERLAY；未添加浏览器 flags、修改 Edge 或系统设置、注入滚动条 CSS。
+- validation.html 的滚动占位高度从 600px 改为 150vh。实测 scrollHeight=1754、innerHeight=517，innerWidth=clientWidth=788（CSS px）；后台滚轮事件滚动后占宽仍为 0。
+- :webview2-compose:check、:webview2-sample:classes、:webview2-compose:browserSmoke 通过。sample 使用 run --args="--test"；verify-background.ps1 共 24 项通过，activations=0。首次 HTTP 请求受本机代理影响返回 503，在测试进程设置 NO_PROXY=127.0.0.1,localhost 后重跑通过。
+- 已查看 scrollbar-scrolled.png，右侧细滚动条可见，网页画面仍由 Compose 绘制。证据：build/fluent-overlay-background.log、webview2-sample/build/evidence/scrollbar.json、scrollbar-scrolled.png、report.json。
+- 未验证闲置自动隐藏时间、真实鼠标拖动、键盘/IME 或跨屏 DPI；不将后台滚轮验收替代前台输入验收。
+
 ## ProGuard 发布产物验收（2026-09-29）
 
 - 随库打包 `META-INF/proguard/webview2-compose.pro`；sample 从实际 JAR 提取规则，启用 ProGuard 7.10.0 的 shrink / optimize / obfuscate。

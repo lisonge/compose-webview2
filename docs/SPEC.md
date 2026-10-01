@@ -41,6 +41,8 @@ WebViewSettings.preferredColorScheme 支持 Auto/Light/Dark，默认 Auto。初�
 
 ## 浏览器行为配置
 
+创建 WebView2 环境时固定使用 FluentOverlay 滚动条，覆盖网页内容而不占用布局宽度；无需修改 Edge 设置。网页自定义滚动条 CSS 仍可能影响最终效果。
+
 WebViewSettings 增加 userAgent、javaScriptEnabled、zoomFactor、userZoomEnabled、devToolsEnabled、contextMenuEnabled、statusBarEnabled。默认分别为 null/true/1.0/false/false/false/false。初始设置在首次业务导航前发送，更新在 STA 执行，不重建页面；UA null 恢复创建时原始 UA，zoomFactor 即时应用，脚本/UI 开关下次导航生效。输入拒绝非法缩放和空白或包含 CR/LF/NUL 的自定义 UA。浏览器原生菜单不承诺 Compose 弹层行为。
 
 
